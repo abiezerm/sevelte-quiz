@@ -1,9 +1,9 @@
 <script lang="ts">
+    import { score } from "./store";
     import type { Question } from "./interfaces";
 
     export let question: Question;
     export let nextQuestion: () => void;
-    export let addToScore: () => void;
     
     let isCorrect: boolean;
     let isAnswered: boolean = false;
@@ -28,7 +28,7 @@
         // const correct = answers.find((answer) => answer.correct);
         // console.log(correct);
         if(isAnswered) return;
-        if(val) addToScore();
+        if(val)  score.update((val) => val += 1);
         isCorrect = val;
         isAnswered = true;
     }
@@ -37,7 +37,7 @@
 <h3>{@html question.question}</h3>
 
 {#if isAnswered}
-    <h5>{#if isCorrect}You got it right!{:else} You goofed up {/if}</h5>
+    <h5 class={isCorrect ? 'correct' : 'wrong'}>{#if isCorrect}You got it right!{:else} You goofed up {/if}</h5>
 {/if}
 
 {#each answers as answer}
@@ -51,3 +51,16 @@
     </div>
 {/if}
 
+<style>
+    h5 {
+        color: blueviolet
+    }
+
+    h5.correct {
+        color: green;
+    }
+
+    h5.wrong {
+        color: red;
+    }
+</style>

@@ -1,9 +1,12 @@
 <script>
+    import { fade, fly } from "svelte/transition";
+    import { score } from "./store";
     import Question from "./Question.svelte";
+    import Modal from "./Modal.svelte";
 
     let quiz = getQuiz();
     let activeQuestion = 0;
-    let score = 0;
+    let isModalOpen = false;
 
 
     async function getQuiz() {
@@ -17,21 +20,26 @@
     }
 
     function resetQuiz() {
-        score = 0;
+        isModalOpen = false;
+        score.set(0);
         activeQuestion = 0;
         quiz = getQuiz();
     }
 
-    function addToScore() {
-        score += 1;
+    $: if ($score > 7 ) {
+        isModalOpen = true;
     }
+
+    //Reactive declaration
+    $: questionNumber = activeQuestion + 1;
+
 </script>
 
 <div>
     <button on:click={resetQuiz}>Start ew quiz</button>
 
-    <h3>My Score: {score}</h3>
-    <h4>Question #{activeQuestion + 1}</h4>
+    <h3>My Score: {$score}</h3>
+    <h4>Question #{questionNumber}</h4>
 
 
     {#await quiz}
@@ -39,12 +47,29 @@
     {:then data} 
         {#each data.results as question, index }
             {#if index === activeQuestion}
+            <div in:fly={{x: 100}} out:fly={{ x: -200}}   class="fade-wrapper">
                 <Question 
-                    {addToScore}
-                    {nextQuestion} 
-                    {question} 
+                {nextQuestion} 
+                {question} 
                 />
+            </div>
             {/if}
         {/each}
     {/await}
 </div>
+
+{#if isModalOpen}
+    <Modal on:close={resetQuiz}>
+        <h2>You won!</h2>
+        <p>Congratulations Your score is {score}</p>
+        <button on:click={resetQuiz}>Start Over</button>
+    </Modal>
+{/if}
+
+                
+<style>
+    .fade-wrapper {
+        position: absolute;
+        /* transition: opacity 0.5s; */
+    }
+</style>
